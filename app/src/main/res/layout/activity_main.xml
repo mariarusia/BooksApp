@@ -10,7 +10,7 @@
         android:id="@+id/search_field"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Applied Linguistics" />
+        android:hint="Enter a topic" />
 
     <Button
         android:id="@+id/search"

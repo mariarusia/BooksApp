@@ -168,10 +168,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         mQuery = savedInstanceState.getString("query");
-        //Log.v("Restarted. input =", mQuery);
-        //Initialize the Loader (execute the search)
-        //super.onRestoreInstanceState(savedInstanceState);
-        getLoaderManager().restartLoader(BOOKS_LOADER_ID, null, MainActivity.this);
-        editText.setText(mQuery);
+        if (mQuery.length() > 0) {
+            getLoaderManager().restartLoader(BOOKS_LOADER_ID, null, MainActivity.this);
+            editText.setText(mQuery);
+        }
     }
 }
