@@ -197,40 +197,48 @@ final class QueryUtils {
             // Create a JSONObject from the JSON response string
             JSONObject baseJsonResponse = new JSONObject(booksJSON);
 
-            // Extract the JSONArray associated with the key called "items",
-            // which represents a list of all items.
-            JSONArray itemsArray = baseJsonResponse.getJSONArray("items");
+            //not to cause json exception in case nothing is found
+            if (baseJsonResponse.has("items")) {
 
-            // For each item create a books object
-            for (int i = 0; i < itemsArray.length(); i++) {
+                // Extract the JSONArray associated with the key called "items",
+                // which represents a list of all items.
+                JSONArray itemsArray = baseJsonResponse.getJSONArray("items");
 
-                // Get a single item at position i within the list of books
-                JSONObject currentBook = itemsArray.getJSONObject(i);
+                // For each item create a books object
+                for (int i = 0; i < itemsArray.length(); i++) {
 
-                //get bookInfo by tag volumeInfo
-                JSONObject bookInfo = currentBook.getJSONObject("volumeInfo");
+                    // Get a single item at position i within the list of books
+                    JSONObject currentBook = itemsArray.getJSONObject(i);
 
-                //get title of the books with the name "title"
-                String title = bookInfo.getString("title");
+                    //get bookInfo by tag volumeInfo
+                    JSONObject bookInfo = currentBook.getJSONObject("volumeInfo");
 
-                //get array with list of authors "authors":
-                JSONArray authorsArray = bookInfo.getJSONArray("authors");
-                String authors;
-                //create 1 String out of lists
-                if (authorsArray.length() == 1) {
-                    authors = (String) authorsArray.get(0);
-                } else {
-                    authors = authorsArray.join(", ");
+                    //get title of the books with the name "title"
+                    String title = bookInfo.getString("title");
+
+                    String authors;
+                    if (bookInfo.has("authors")) {
+                        //get array with list of authors "authors":
+                        JSONArray authorsArray = bookInfo.getJSONArray("authors");
+                        //create 1 String out of lists
+                        if (authorsArray.length() == 1) {
+                            authors = (String) authorsArray.get(0);
+                        } else {
+                            authors = authorsArray.join(", ");
+                        }
+                    } else {
+                        authors = "No authors available";
+                    }
+
+                    // find the preview url - previewLink
+                    String url = bookInfo.getString("previewLink");
+
+                    // Create a new {@link Books object from the JSON response.
+                    Books book = new Books(title, authors, url);
+
+                    // Add the new {@link Earthquake} to the list of earthquakes.
+                    books.add(book);
                 }
-
-                // find the preview url - previewLink
-                String url = bookInfo.getString("previewLink");
-
-                // Create a new {@link Books object from the JSON response.
-                Books book = new Books(title, authors, url);
-
-                // Add the new {@link Earthquake} to the list of earthquakes.
-                books.add(book);
             }
 
         } catch (JSONException e) {

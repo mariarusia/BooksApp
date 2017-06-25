@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private String mQuery;
     //the input edit text
     private EditText editText;
+
+    private ConnectivityManager connMgr;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -48,10 +50,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         // Get a reference to the ConnectivityManager to check state of network connectivity
-        ConnectivityManager connMgr = (ConnectivityManager)
+        connMgr = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
-        // Get details on the currently active default data network
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        // Prepare the loader.  Either re-connect with an existing one,
+        // or start a new one.
+        getLoaderManager().initLoader(0, null, this);
 
         //books array, adapter to show it
         List<Books> books = new ArrayList<Books>();
@@ -74,22 +77,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         editText = (EditText) findViewById(R.id.search_field);
         Button button = (Button) findViewById(search);
 
-        if (networkInfo != null && networkInfo.isConnected()) {
-            getLoaderManager();
-        } else {
-            // Otherwise, display error
-            // First, hide loading indicator so error message will be visible
-            loadingIndicator = findViewById(R.id.loading_spinner);
-            loadingIndicator.setVisibility(GONE);
-            // Update empty state with no connection error message
-            textView.setText(R.string.no_internet_message);
-        }
 
-        if (networkInfo != null && networkInfo.isConnected()) {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                // Get details on the currently active default data network
+                NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+                if (networkInfo != null && networkInfo.isConnected()) {
                     mQuery = String.valueOf(editText.getText());
                     mAdapter.clear();
 
@@ -101,26 +97,45 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     loadingIndicator.setVisibility(View.VISIBLE);
 
                     //start fetching
+                    //getLoaderManager().initLoader(BOOKS_LOADER_ID, null, MainActivity.this);
                     getLoaderManager().restartLoader(BOOKS_LOADER_ID, null, MainActivity.this);
+                } else {
+                    // Otherwise, display error
+                    // First, hide loading indicator so error message will be visible
+                    //loadingIndicator = findViewById(R.id.loading_spinner);
+                    //loadingIndicator.setVisibility(GONE);
+                    // Update empty state with no connection error message
+                    mAdapter.clear();
+                    textView.setText(R.string.no_internet_message);
+                    //textView.setVisibility(View.VISIBLE);
                 }
-            });
-        }
+            }
+        });
 
         //set on click listener to open the preview page for a book
         booksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                // Find the current book that was clicked on
-                Books currentBook = mAdapter.getItem(position);
 
-                // Convert the String URL into a URI object (to pass into the Intent constructor)
-                Uri bookUri = Uri.parse(currentBook.getUrl());
+                NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
-                // Create a new intent to view the earthquake URI
-                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, bookUri);
+                if (networkInfo != null && networkInfo.isConnected()) {
+                    // Find the current book that was clicked on
+                    Books currentBook = mAdapter.getItem(position);
 
-                // Send the intent to launch a new activity
-                startActivity(websiteIntent);
+                    // Convert the String URL into a URI object (to pass into the Intent constructor)
+                    Uri bookUri = Uri.parse(currentBook.getUrl());
+
+                    // Create a new intent to view the earthquake URI
+                    Intent websiteIntent = new Intent(Intent.ACTION_VIEW, bookUri);
+
+                    // Send the intent to launch a new activity
+                    startActivity(websiteIntent);
+                } else {
+                    // Otherwise, display error
+                    // Update empty state with no connection error message
+                    textView.setText(R.string.no_internet_message);
+                }
             }
         });
     }
@@ -135,9 +150,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<List<Books>> loader, List<Books> books) {
         // Clear the adapter of previous earthquake data
-
-        textView.setText(R.string.no_books_message);
-
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.loading_spinner);
         progressBar.setVisibility(GONE);
         mAdapter.clear();
@@ -146,6 +158,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // data set. This will trigger the ListView to update.
         if (books != null && !books.isEmpty()) {
             mAdapter.addAll(books);
+        } else {
+            textView.setText(R.string.no_books_message);
         }
     }
 
@@ -169,8 +183,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         mQuery = savedInstanceState.getString("query");
         if (mQuery.length() > 0) {
-            getLoaderManager().restartLoader(BOOKS_LOADER_ID, null, MainActivity.this);
-            editText.setText(mQuery);
+
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+            if (networkInfo != null && networkInfo.isConnected()) {
+                //hide the No books message which appears
+                textView.setVisibility(GONE);
+                getLoaderManager().restartLoader(BOOKS_LOADER_ID, null, MainActivity.this);
+                editText.setText(mQuery);
+            } else {
+                // Otherwise, display error
+                // Update empty state with no connection error message
+                editText.setText(mQuery);
+                textView.setText(R.string.no_internet_message);
+            }
         }
     }
 }

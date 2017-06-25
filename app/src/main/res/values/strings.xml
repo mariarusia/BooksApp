@@ -2,5 +2,6 @@
     <string name="app_name">BooksApp</string>
     <string name="name_app">Book Application</string>
     <string name="no_internet_message">No internet connection</string>
-    <string name="no_books_message">No Books found. Enter a new query.</string>
+    <string name="no_books_message">No Books to display. Enter a query.</string>
+    <string name="no_authors_message">No authors available</string>
 </resources>
