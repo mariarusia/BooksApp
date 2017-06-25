@@ -38,10 +38,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private EditText editText;
 
     private ConnectivityManager connMgr;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
     private GoogleApiClient client;
 
     @Override
@@ -77,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         editText = (EditText) findViewById(R.id.search_field);
         Button button = (Button) findViewById(search);
 
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,13 +92,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     loadingIndicator.setVisibility(View.VISIBLE);
 
                     //start fetching
-                    //getLoaderManager().initLoader(BOOKS_LOADER_ID, null, MainActivity.this);
                     getLoaderManager().restartLoader(BOOKS_LOADER_ID, null, MainActivity.this);
                 } else {
                     // Otherwise, display error
-                    // First, hide loading indicator so error message will be visible
-                    //loadingIndicator = findViewById(R.id.loading_spinner);
-                    //loadingIndicator.setVisibility(GONE);
                     // Update empty state with no connection error message
                     mAdapter.clear();
                     textView.setText(R.string.no_internet_message);
